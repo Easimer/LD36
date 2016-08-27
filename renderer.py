@@ -33,7 +33,7 @@ class renderer:
 		pygame.quit()
 
 	def predraw(self):
-		self.surface.fill((0, 255, 255))
+		self.surface.fill((255, 255, 255))
 
 	def postdraw(self):
 		pygame.display.flip()

@@ -10,6 +10,7 @@ __engine = None
 
 class engine:
 	__unregisterme__ = False
+
 	def __init__(self):
 		global __engine
 		__engine = self
@@ -29,6 +30,8 @@ class engine:
 		self.renderer.fratecap(60)
 
 	def softreset(self): # reset everything, except the renderer and the gamemanager
+		if hasattr(self, 'eventdemux'):
+			self.eventdemux.deleteall()
 		self.eventdemux = eventdemux()
 		self.resources = resources()
 		self.entities = entities()

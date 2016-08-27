@@ -41,6 +41,8 @@ class eventdemux:
 	def checkhandlers(self):
 		for handlers in self.hregister:
 			for handler in handlers:
+				if not handler["obj"]:
+					continue
 				if handler["obj"].__unregisterme__:
 					self.unregister(handler["id"])
 
@@ -49,10 +51,9 @@ class eventdemux:
 	def register(self, evtype, obj, f):
 		# get free handler ID
 		freeid = 0
-		for handlers in self.hregister[evtype]:
-			for handler in handlers:
-				if handler["id"] == freeid:
-					freeid += 1
+		for handler in self.hregister[evtype]:
+			if handler["id"] == freeid:
+				freeid += 1
 		# create register entry
 		handler = {
 			"id" : freeid,
@@ -65,8 +66,15 @@ class eventdemux:
 
 	def unregister(self, hid):
 		# find handler(s) with ID 'hid', remove it
-		handlers = []
 		for reg in self.hregister:
 			for handler in reg:
 				if handler["id"] == hid:
-					handlers.remove(handler)
+					reg.remove(handler)
+
+	def deleteall(self):
+		for reg in self.hregister:
+			for handler in reg:
+				for k in handler:
+					handler[k] = None
+			reg = []
+		self.hregister = []

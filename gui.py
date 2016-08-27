@@ -4,15 +4,30 @@ import engine
 from eventdemux import eventdemux
 
 class gui(entity):
+	def __init__(self):
+		self.elements = []
+		self.font = None
+		self.__unregisterme__ = False
+		self.visible = True
 
-	elements = []
-	font = None
-	__unregisterme__ = False
-	visible = True
+	def update(self, dt):
+		pass
 
+	def draw(self, target):
+		pass
+
+	def mouseevent(self, ev):
+		pass
+
+	def setbgcolor(self, color):
+		pass
+
+	
+class gui_root(gui):
 	def __init__(self, deffilename):
-		definition = None
+		super().__init__()
 		e = engine.engine.getengine()
+		definition = None
 
 		with open(deffilename) as file:
 			definition = VMF(file).lBlocks
@@ -32,10 +47,9 @@ class gui(entity):
 					w.setbgcolor(subblock["bgcolor"])
 				self.elements.append(w)
 		evdm = e.eventdemux
-		evdm.register(eventdemux.MOUSEMOTION, self, gui.mouseevent)
-		evdm.register(eventdemux.MOUSEBUTTONUP, self, gui.mouseevent)
-		evdm.register(eventdemux.MOUSEBUTTONDOWN, self, gui.mouseevent)
-
+		evdm.register(eventdemux.MOUSEMOTION, self, gui_root.mouseevent)
+		evdm.register(eventdemux.MOUSEBUTTONUP, self, gui_root.mouseevent)
+		evdm.register(eventdemux.MOUSEBUTTONDOWN, self, gui_root.mouseevent)
 	def draw(self, target):
 		if not self.visible:
 			return
@@ -49,6 +63,8 @@ class gui(entity):
 	def __del__(self):
 		self.__unregisterme__ = True
 
+	def setbgcolor(self, color):
+		pass
 
 
 class gui_window(gui):
@@ -60,6 +76,7 @@ class gui_window(gui):
 	barbgcolor = (48, 48, 48)
 
 	def __init__(self, parent, title, position, size, subelems):
+		super().__init__()
 		self.parent = parent
 		self.title = title
 		self.position = position
@@ -86,7 +103,8 @@ class gui_window(gui):
 				print("visible: %s" % elem["visible"])
 				e.visible = elem["visible"].lower() in ["true", "1", "yes"]
 			if "bgcolor" in elem:
-				e.color = elem["bgcolor"]
+				print("bgcolor %s" % elem)
+				e.setbgcolor(elem["bgcolor"])
 
 			self.elements.append(e)
 
@@ -122,6 +140,7 @@ class gui_window(gui):
 class gui_label(gui):
 	surf = None
 	def __init__(self, parent, text, position, color = (255, 255, 255)):
+		super().__init__()
 		self.parent = parent
 		self.text = text
 		self.position = position
@@ -139,26 +158,24 @@ class gui_button(gui):
 	surf_clicked = None
 
 	clicked = False
+	onclick = None
 
 	def __init__(self, parent, text, position, size, onclick, color = (212, 212, 212)):
+		super().__init__()
 		self.parent = parent
 		self.text = text
 		self.position = position
 		self.size = size
 		self.setbgcolor(color)
-		if onclick in gui_action:
-			self.onclick = gui_action[onclick]
+		if onclick == "null":
+			self.onclick = None
 		else:
-			print("button(%s): GUI action '%s' not found. the button will do nothing." % (str(self) if not hasattr(self, 'id') else self.id, onclick))
+			if onclick in gui_action:
+				self.onclick = gui_action[onclick]
+			else:
+				print("button(%s): GUI action '%s' not found. the button will do nothing." % (str(self) if not hasattr(self, 'id') else self.id, onclick))
 
-		e = engine.engine.getengine()
-		self.surf = e.renderer.getsurf(*self.size)
-		self.surf.fill(self.bgcolor)
-		self.surf.blit(self.parent.parent.font.render(self.text, False, (255, 255, 255)), (8, 8))
-
-		self.surf_clicked = e.renderer.getsurf(*self.size)
-		self.surf_clicked.fill(self.bgcolor_clicked)
-		self.surf_clicked.blit(self.parent.parent.font.render(self.text, False, (255, 255, 255)), (8, 8))
+		self.gensurfs()
 
 		print("\tbutton: text: %s pos: %s color: %s action: %s" % (self.text, self.position, self.bgcolor, onclick))
 	def setbgcolor(self, color):
@@ -166,11 +183,29 @@ class gui_button(gui):
 			return
 		self.bgcolor = color
 		self.bgcolor_clicked = [(val - 16) for val in color]
+		self.gensurfs()
+
+	def gensurfs(self):
+		e = engine.engine.getengine()
+
+		textpos = [0, 0]
+		textsize = self.parent.parent.font.size(self.text)
+		textpos[0] = (self.size[0] - textsize[0]) / 2
+		textpos[1] = (self.size[1] - textsize[1]) / 2
+
+		self.surf = e.renderer.getsurf(*self.size)
+		self.surf.fill(self.bgcolor)
+		self.surf.blit(self.parent.parent.font.render(self.text, False, (255, 255, 255)), textpos)
+
+		self.surf_clicked = e.renderer.getsurf(*self.size)
+		self.surf_clicked.fill(self.bgcolor_clicked)
+		self.surf_clicked.blit(self.parent.parent.font.render(self.text, False, (255, 255, 255)), textpos)
 
 	def mouseevent(self, ev):
 		if ev.type == eventdemux.MOUSEBUTTONUP:
 			if ev.button == 1:
-				self.onclick(self)
+				if self.onclick:
+					self.onclick(self)
 
 	def draw(self, target):
 		if not self.visible:
@@ -184,6 +219,7 @@ class gui_image(gui):
 	surf = None
 
 	def __init__(self, parent, path, position):
+		super().__init__()
 		e = engine.engine.getengine()
 		e.resources.precache(e.resources.IMAGE, path)
 		self.parent = parent
@@ -201,19 +237,10 @@ class gui_image(gui):
 
 # define your gui actions right down here fam
 
-def print_meme(self):
-	print("meme")
-
 def mainmenu_start(self):
-	pass
-
-def showpic(self):
-	for elem in self.parent.elements:
-		if isinstance(elem, gui_image):
-			elem.visible = True
+	e = engine.engine.getengine()
+	e.gamemgr.switchstate(e.gamemgr.STATE_GAME)
 
 gui_action = {
-	"print_meme" : print_meme,
 	"mainmenu_start" : mainmenu_start,
-	"showpic" : showpic,
 }
