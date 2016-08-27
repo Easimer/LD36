@@ -20,13 +20,13 @@ class eventdemux:
 	eventtype = None
 
 	def __init__(self):
-		for i in range(256):
+		for i in range(128):
 			self.hregister.append(list())
 		print("pygame event queue demux init")
 
 	def update(self):
 		for event in pygame.event.get():
-			try:
+			#try:
 				#print("event %s" % str(event))
 				for handler in self.hregister[event.type]:
 					if handler["obj"]:
@@ -35,8 +35,8 @@ class eventdemux:
 					else:
 						if handler["f"]:
 							handler["f"](event)
-			except IndexError:
-				print("eventdemux.pygame: event %s not handled" % event.type)
+			#except IndexError:
+			#	print("eventdemux.pygame: event %s not handled" % event.type)
 
 	def checkhandlers(self):
 		for handlers in self.hregister:

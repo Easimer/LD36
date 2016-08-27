@@ -16,6 +16,7 @@ class renderer:
 		self.lasttime = pygame.time.get_ticks()
 		self.width = width
 		self.height = height
+		self.clock = pygame.time.Clock()
 		print("pygame renderer initialized")
 
 	def postdraw(self):
@@ -32,7 +33,7 @@ class renderer:
 		pygame.quit()
 
 	def predraw(self):
-		pass
+		self.surface.fill((0, 255, 255))
 
 	def postdraw(self):
 		pygame.display.flip()
@@ -50,5 +51,18 @@ class renderer:
 			ty = self.height / 2 + newcoord.y
 		self.surface.blit(surface, (tx, ty))
 
+	def drawsurfgui(self, surface, x, y):
+		# don't translate coordinates
+		self.surface.blit(surface, (x, y))
+
+	def getsurf(self, w = 128, h = 128):
+		return pygame.Surface((w, h))
+
+	def getrect(self, x = 0, y = 0, w = 128, h = 128):
+		return pygame.Rect(x, y, w, h)
+
 	def shutdown(self):
 		pygame.quit()
+
+	def fratecap(self, fps):
+		self.clock.tick(fps)

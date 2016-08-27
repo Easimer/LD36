@@ -25,5 +25,5 @@ class entity:
 		return [ c for c in self.components if isinstance(c, component)]
 
 	def __del__(self):
-		for component in components:
+		for component in self.components:
 			component.__del__()

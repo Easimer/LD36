@@ -127,7 +127,7 @@ class VMF:
 					for i in range(0, 3):
 						strValue.append(float(lNumbers[i]))
 
-				elif strProperty == "_light":
+				elif strProperty == "_light" or strProperty.endswith("color"):
 					lNumbers = strValue.split()
 					strValue = []
 					for i in range(0, 4):

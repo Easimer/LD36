@@ -24,7 +24,9 @@ class engine:
 		dt = self.renderer.dt
 		self.renderer.predraw()
 		self.gamemgr.update()
+		self.gamemgr.draw()
 		self.renderer.postdraw()
+		self.renderer.fratecap(60)
 
 	def softreset(self): # reset everything, except the renderer and the gamemanager
 		self.eventdemux = eventdemux()
@@ -39,3 +41,15 @@ class engine:
 	@staticmethod
 	def getengine():
 		return __engine
+
+def dot(v1, v2):
+	s = 0
+	for i in range(min(len(v1), len(v2))):
+		s += v1[i] * v2[i]
+	return s
+
+def ptinrect(p, r, xywh = False):
+	return not ((r[1] + r[3] <= p[1]) or (r[1] >= p[1]) or (r[0] >= p[0]) or (r[0] + r[2] <= p[0]))
+
+
+	
