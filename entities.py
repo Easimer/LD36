@@ -1,3 +1,4 @@
+import copy
 from entity import entity
 
 class entities:
@@ -20,36 +21,37 @@ class entities:
 	ro_lock = False
 
 	def add(self, prefab): # add an already initialized and constructed entity to the system
-		entities_rw.append(prefab)
+		self.entities_rw.append(prefab)
 		return prefab
 
 	def create(self, name, *args): # create an entity with components specified in *args and add it to the system
 		e = entity(name, args)
-		entities_rw.append(e)
+		self.entities_rw.append(e)
 
 	def update(self, dt):
-		ro_lock = True
+		print("entities: update")
+		self.ro_lock = True
 		for entity in self.entities_ro:
 			entity.update(dt)
-		ro_lock = False
+		self.ro_lock = False
 
 	def draw(self, target):
 		for entity in self.entities_rw:
 			entity.draw(target)
 
 	def sync(self):
-		if ro_lock:
+		if self.ro_lock:
 			return
-		entities_ro = copy.deepcopy(entities_rw)
+		self.entities_ro = copy.deepcopy(self.entities_rw)
 
 	def clear(self):
-		if ro_lock:
+		if self.ro_lock:
 			return
-		entities_ro = []
+		self.entities_ro = []
 
 	def entbyname(self, name):
 		finds = []
-		for ent in entities_rw:
+		for ent in self.entities_rw:
 			if ent.name == name:
 				finds.append(ent)
 		if len(finds) == 1:
@@ -58,10 +60,9 @@ class entities:
 			return finds
 
 	def removebyname(self, name):
-		for ent in entities_rw:
+		for ent in self.entities_rw:
 			if ent.name == name:
-				entities_rw.remove(ent)
+				self.entities_rw.remove(ent)
 
 	def removebyobj(self, obj):
-		entities_rw.remove(ent)
-
+		self.entities_rw.remove(ent)

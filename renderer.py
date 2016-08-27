@@ -33,7 +33,7 @@ class renderer:
 		pygame.quit()
 
 	def predraw(self):
-		self.surface.fill((255, 255, 255))
+		self.surface.fill((127, 104, 94))
 
 	def postdraw(self):
 		pygame.display.flip()
@@ -43,10 +43,10 @@ class renderer:
 
 	def drawsurf(self, surface, x, y):
 		# translate world coordinates to screen coordinates
-		tx = 0
-		ty = 0
-		if camera:
-			newcoord = camera.getcomponent(transform).position - vector(x, y)
+		tx = x
+		ty = y
+		if self.camera:
+			newcoord = self.camera.getcomponent(transform).position - vector(x, y)
 			tx = self.width / 2 + newcoord.x
 			ty = self.height / 2 + newcoord.y
 		self.surface.blit(surface, (tx, ty))
@@ -66,3 +66,22 @@ class renderer:
 
 	def fratecap(self, fps):
 		self.clock.tick(fps)
+
+	def draw_grid(self): # fill screen with a white grid
+		s = pygame.Surface((1280, 720))
+		s.set_colorkey((0, 0, 0))
+		s.set_alpha(128)
+		# draw main lines
+		y = 0
+		for i in range(10):
+			pygame.draw.line(s, (255, 255, 255), (0, y), (1280, y), 2 if y % 48 == 0 else 1)
+			y += 72
+		x = 0
+		for i in range(18):
+			pygame.draw.line(s, (255, 255, 255), (x, 0), (x, 720), 2 if x % 48 == 0 else 1)
+			x += 72
+
+		self.surface.blit(s, (0,0))
+
+	def setcamera(self, newcamera):
+		self.camera = newcamera

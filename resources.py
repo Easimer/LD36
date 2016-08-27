@@ -9,7 +9,7 @@ class resources:
 	EMF		= 2 # tile map file
 	FONT	= 3 # font file
 	res = []
-	def precache(self, restype, path):
+	def precache(self, restype, path, size = 16):
 		for resource in self.res:
 			if resource["id"] == path:
 				return
@@ -35,7 +35,7 @@ class resources:
 				print("resources: cannot precache map file '%s': %s" % (path, str(e)))
 		elif restype == resources.FONT:
 			try:
-				resentry["res"] = pygame.font.Font(path, 16)
+				resentry["res"] = pygame.font.Font(path, size)
 				self.res.append(resentry)
 			except Exception as e:
 				print("resources: cannot precache font file '%s': %s" % (path, str(e)))

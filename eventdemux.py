@@ -1,4 +1,9 @@
 import pygame
+"""
+"interfészbemenet-eseménycső-demultiplexer"
+Other code is able to subscribe to pygame events. This class "demultiplexes" the events and calls the registered
+handler functions.
+"""
 
 class eventdemux:
 	QUIT = pygame.QUIT

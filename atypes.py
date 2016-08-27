@@ -1,3 +1,4 @@
+import engine
 from component import component
 
 class vector:
@@ -80,12 +81,20 @@ class rotation(vector):
 class transform(component):
 	position = vector()
 	rotation = rotation()
+	def __init__(self, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0):
+		self.position = vector(x, y, z)
+		self.rotation = rotation(rx, ry, rz)
+
 
 class sprite2d(component):
-	sprite = None
+	def __init__(self, path, offset = (0, 0, 0)):
+		e = engine.engine.getengine()
+		e.resources.precache(e.resources.IMAGE, path)
+		self.sprite = e.resources.load(e.resources.IMAGE, path)
+		self.offset = vector(*offset)
 
 	def draw(self, target):
 		if not parent or not sprite:
 			return
-		transform = parent.getcomponent(transform)
-		target.drawsurf(sprite, transform.position.x, transform.position.y)
+		t = parent.getcomponent(transform)
+		target.drawsurf(sprite, t.position.x, t.position.y)

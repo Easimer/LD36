@@ -9,6 +9,9 @@ class gui(entity):
 		self.font = None
 		self.__unregisterme__ = False
 		self.visible = True
+		self.id = None
+		self.position = [0, 0]
+		self.size = [0, 0]
 
 	def update(self, dt):
 		pass
@@ -66,6 +69,16 @@ class gui_root(gui):
 	def setbgcolor(self, color):
 		pass
 
+	def findelementbyid(self, name):
+		for elem in self.elements:
+			if elem.id == name:
+				return elem
+			for subelem in elem.elements:
+				if subelem.id == name:
+					return subelem
+		return None
+
+
 
 class gui_window(gui):
 	parent = None
@@ -88,8 +101,6 @@ class gui_window(gui):
 			e = None
 			if elem["__classname__"] == "label":
 				e = gui_label(self, elem["text"], elem["position"])
-				
-				self.elements.append(l)
 			elif elem["__classname__"] == "button":
 				e = gui_button(self, elem["text"], elem["position"], elem["size"], elem["onclick"])
 			elif elem["__classname__"] == "image":
@@ -97,13 +108,12 @@ class gui_window(gui):
 			else:
 				continue
 
-			if "color" in elem:
-				e.color = elem["color"]
+			for prop in elem:
+				if not prop.startswith("__") and not prop in ["visible", "bgcolor", "onclick"]:
+					setattr(e, prop, elem[prop])
 			if "visible" in elem:
-				print("visible: %s" % elem["visible"])
 				e.visible = elem["visible"].lower() in ["true", "1", "yes"]
 			if "bgcolor" in elem:
-				print("bgcolor %s" % elem)
 				e.setbgcolor(elem["bgcolor"])
 
 			self.elements.append(e)
@@ -132,6 +142,7 @@ class gui_window(gui):
 		for element in self.elements:
 			realpos = [element.position[0] + self.position[0], element.position[1] + self.position[1]]
 			if engine.ptinrect(ev.pos, (realpos + element.size), True):
+				#print("mouseevent %s hit element %s at %s" % (ev, element, ev.pos))
 				element.mouseevent(ev)
 
 	def close(self):
@@ -139,19 +150,34 @@ class gui_window(gui):
 
 class gui_label(gui):
 	surf = None
+	font = None
+	font_size = 16
 	def __init__(self, parent, text, position, color = (255, 255, 255)):
 		super().__init__()
 		self.parent = parent
 		self.text = text
 		self.position = position
 		self.color = color
-		self.surf = self.parent.parent.font.render(self.text, False, self.color)
+		self.gensurf()
 		print("\tlabel: text: %s pos: %s color: %s" % (self.text, self.position, self.color))
 
 	def draw(self, target):
+		if isinstance(self.font, str):
+			self.gensurf()
 		if not self.visible:
 			return
-		target.drawsurfgui(self.surf, self.parent.position[0] + self.position[0], self.parent.position[1] + self.position[1] + 32)
+		target.drawsurfgui(self.surf, self.parent.position[0] + self.position[0], self.parent.position[1] + self.position[1])
+
+	def gensurf(self):
+		if not self.font:
+			self.surf = self.parent.parent.font.render(self.text, False, self.color)
+		else:
+			if isinstance(self.font, str):
+				e = engine.engine.getengine()
+				e.resources.precache(e.resources.FONT, self.font, int(self.font_size))
+				self.font = e.resources.load(e.resources.FONT, self.font)
+				print("custom font!")
+			self.surf = self.font.render(self.text, False, self.color)
 
 class gui_button(gui):
 	surf = None
@@ -241,6 +267,11 @@ def mainmenu_start(self):
 	e = engine.engine.getengine()
 	e.gamemgr.switchstate(e.gamemgr.STATE_GAME)
 
+def buypart(self):
+	e = engine.engine.getengine()
+	e.gamemgr.buypart(self.part)
+
 gui_action = {
 	"mainmenu_start" : mainmenu_start,
+	"buypart" : buypart,
 }
