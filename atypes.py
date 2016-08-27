@@ -83,3 +83,9 @@ class transform(component):
 
 class sprite2d(component):
 	sprite = None
+
+	def draw(self, target):
+		if not parent or not sprite:
+			return
+		transform = parent.getcomponent(transform)
+		target.drawsurf(sprite, transform.position.x, transform.position.y)

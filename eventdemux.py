@@ -1,20 +1,21 @@
 import pygame
 
 class eventdemux:
-	QUIT = 0
-	ACTIVE = 1
-	KEYDOWN = 2
-	KEYUP = 3
-	MOUSEMOTION = 4
-	MOUSEBUTTONUP = 5
-	MOUSEBUTTONDOWN = 6
-	JOYAXISMOTION = 7
-	JOYBALLMOTION = 8
-	JOYHATMOTION = 9
-	JOYBUTTONUP = 10
-	JOYBUTTONDOWN = 11
-	VIDEORESIZE = 12
-	VIDEOEXPOSE = 13
+	QUIT = pygame.QUIT
+	ACTIVE = pygame.ACTIVEEVENT
+	KEYDOWN = pygame.KEYDOWN
+	KEYUP = pygame.KEYUP
+	MOUSEMOTION = pygame.MOUSEMOTION
+	MOUSEBUTTONUP = pygame.MOUSEBUTTONUP
+	MOUSEBUTTONDOWN = pygame.MOUSEBUTTONDOWN
+	JOYAXISMOTION = pygame.JOYAXISMOTION
+	JOYBALLMOTION = pygame.JOYBALLMOTION
+	JOYHATMOTION = pygame.JOYHATMOTION
+	JOYBUTTONUP = pygame.JOYBUTTONUP
+	JOYBUTTONDOWN = pygame.JOYBUTTONDOWN
+	VIDEORESIZE = pygame.VIDEORESIZE
+	VIDEOEXPOSE = pygame.VIDEOEXPOSE
+
 	hregister = []
 	eventtype = None
 
@@ -26,6 +27,7 @@ class eventdemux:
 	def update(self):
 		for event in pygame.event.get():
 			try:
+				#print("event %s" % str(event))
 				for handler in self.hregister[event.type]:
 					if handler["obj"]:
 						if handler["f"]:
@@ -35,6 +37,12 @@ class eventdemux:
 							handler["f"](event)
 			except IndexError:
 				print("eventdemux.pygame: event %s not handled" % event.type)
+
+	def checkhandlers(self):
+		for handlers in self.hregister:
+			for handler in handlers:
+				if handler["obj"].__unregisterme__:
+					self.unregister(handler["id"])
 
 	# register event handler, with an optional object that can be passed to the handler function
 	# returns a handler ID that can be used to remove the handler
@@ -53,6 +61,7 @@ class eventdemux:
 		}
 		# add handler
 		self.hregister[evtype].append(handler)
+		return handler["id"]
 
 	def unregister(self, hid):
 		# find handler(s) with ID 'hid', remove it
