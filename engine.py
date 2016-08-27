@@ -17,6 +17,7 @@ class engine:
 		
 		self.renderer = renderer()
 		self.eventdemux = eventdemux()
+		self.eventdemux.register(eventdemux.QUIT, self, engine.quit)
 		self.softreset()
 		self.gamemgr = gamemgr()
 
@@ -30,14 +31,17 @@ class engine:
 		self.renderer.postdraw()
 		self.renderer.fratecap(60)
 
-	def softreset(self): # reset everything, except the renderer and the gamemanager			
+	def softreset(self):	
 		self.resources = resources()
 		self.entities = entities()
-		self.eventdemux.register(eventdemux.QUIT, self, engine.quit)
+		
 
 	def quit(self, ev):
 		self.renderer.shutdown()
 		sys.exit(0)
+
+	def __repr__(self):
+		return "engine\n\trenderer: %s\n\tentities: %s\n\tgamemgr: %s\n\teventdemux: %s" % (self.renderer, self.entities, self.gamemgr, self.eventdemux)
 
 	@staticmethod
 	def getengine():

@@ -30,7 +30,9 @@ class part(component):
 
 def create_machine(name):
 	e = entity(name)
+	t = transform()
 	p = part("textures/4body.png")
 	p.setparent(e)
+	e.addcomponent(t)
 	e.addcomponent(p)
 	return e

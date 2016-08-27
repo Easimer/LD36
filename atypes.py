@@ -94,7 +94,11 @@ class sprite2d(component):
 		self.offset = vector(*offset)
 
 	def draw(self, target):
-		if not parent or not sprite:
+		if not self.parent or not self.sprite:
 			return
-		t = parent.getcomponent(transform)
-		target.drawsurf(sprite, t.position.x, t.position.y)
+		t = None
+		for comp in self.parent.components:
+			if isinstance(comp, transform):
+				t = comp
+				target.drawsurf(self.sprite, t.position.x, t.position.y)
+				return

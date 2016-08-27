@@ -1,5 +1,6 @@
 import pygame
 from atypes import vector
+from atypes import transform
 
 class renderer:
 	surface = None
@@ -46,9 +47,12 @@ class renderer:
 		tx = x
 		ty = y
 		if self.camera:
-			newcoord = self.camera.getcomponent(transform).position - vector(x, y)
-			tx = self.width / 2 + newcoord.x
-			ty = self.height / 2 + newcoord.y
+			for comp in self.camera.components:
+				if isinstance(comp, transform):
+					newcoord = comp.position - vector(x, y)
+					tx = self.width / 2 + newcoord.x
+					ty = self.height / 2 + newcoord.y
+					break
 		self.surface.blit(surface, (tx, ty))
 
 	def drawsurfgui(self, surface, x, y):

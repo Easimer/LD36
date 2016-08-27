@@ -1,5 +1,6 @@
 import engine
 import gui
+import pprint
 
 import assembler
 
@@ -57,13 +58,12 @@ class gamemgr:
 			e.entities.sync()
 		if self.gui_active:
 			self.gui_active.update(e.renderer.dt)
-		
 
 	def draw(self):
 		e = engine.engine.getengine()
 		e.renderer.draw_grid()
 		if self.state == gamemgr.STATE_GAME:
-			e.entitites.draw(e.renderer)
+			e.entities.draw(e.renderer)
 		if self.gui_active:
 			self.gui_active.draw(e.renderer)
 

@@ -29,7 +29,6 @@ class entities:
 		self.entities_rw.append(e)
 
 	def update(self, dt):
-		print("entities: update")
 		self.ro_lock = True
 		for entity in self.entities_ro:
 			entity.update(dt)
