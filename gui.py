@@ -8,6 +8,7 @@ class gui(entity):
 	elements = []
 	font = None
 	__unregisterme__ = False
+	visible = True
 
 	def __init__(self, deffilename):
 		definition = None
@@ -36,6 +37,8 @@ class gui(entity):
 		evdm.register(eventdemux.MOUSEBUTTONDOWN, self, gui.mouseevent)
 
 	def draw(self, target):
+		if not self.visible:
+			return
 		for element in self.elements:
 			element.draw(target)
 
@@ -65,16 +68,27 @@ class gui_window(gui):
 		print("window: title: %s pos: %s size: %s" % (title, position, size))
 		self.elements = []
 		for elem in subelems:
+			e = None
 			if elem["__classname__"] == "label":
-				l = gui_label(self, elem["text"], elem["position"])
-				if "color" in elem:
-					l.color = elem["color"]
+				e = gui_label(self, elem["text"], elem["position"])
+				
 				self.elements.append(l)
-			if elem["__classname__"] == "button":
-				b = gui_button(self, elem["text"], elem["position"], elem["size"], elem["onclick"])
-				if "bgcolor" in elem:
-					b.color = elem["bgcolor"]
-				self.elements.append(b)
+			elif elem["__classname__"] == "button":
+				e = gui_button(self, elem["text"], elem["position"], elem["size"], elem["onclick"])
+			elif elem["__classname__"] == "image":
+				e = gui_image(self, elem["path"], elem["position"])
+			else:
+				continue
+
+			if "color" in elem:
+				e.color = elem["color"]
+			if "visible" in elem:
+				print("visible: %s" % elem["visible"])
+				e.visible = elem["visible"].lower() in ["true", "1", "yes"]
+			if "bgcolor" in elem:
+				e.color = elem["bgcolor"]
+
+			self.elements.append(e)
 
 	def setbgcolor(self, color):
 		if len(color) not in [3, 4]:
@@ -83,6 +97,8 @@ class gui_window(gui):
 		self.barbgcolor = [(val - 16) for val in color]
 
 	def draw(self, target):
+		if not self.visible:
+			return
 		s = target.getsurf(self.size[0], self.size[1])
 		s.fill(self.bgcolor)
 		if self.title or len(self.title) > 0:
@@ -114,6 +130,8 @@ class gui_label(gui):
 		print("\tlabel: text: %s pos: %s color: %s" % (self.text, self.position, self.color))
 
 	def draw(self, target):
+		if not self.visible:
+			return
 		target.drawsurfgui(self.surf, self.parent.position[0] + self.position[0], self.parent.position[1] + self.position[1] + 32)
 
 class gui_button(gui):
@@ -155,10 +173,31 @@ class gui_button(gui):
 				self.onclick(self)
 
 	def draw(self, target):
+		if not self.visible:
+			return
 		if self.clicked:
 			target.drawsurfgui(self.surf_clicked, self.parent.position[0] + self.position[0], self.parent.position[1] + self.position[1])
 		else:
 			target.drawsurfgui(self.surf, self.parent.position[0] + self.position[0], self.parent.position[1] + self.position[1])
+
+class gui_image(gui):
+	surf = None
+
+	def __init__(self, parent, path, position):
+		e = engine.engine.getengine()
+		e.resources.precache(e.resources.IMAGE, path)
+		self.parent = parent
+		self.position = position
+		self.surf = e.resources.load(e.resources.IMAGE, path)
+		self.size = [self.surf.get_width(), self.surf.get_height()]
+
+	def mouseevent(self, ev):
+		pass
+
+	def draw(self, target):
+		if not self.visible:
+			return
+		target.drawsurfgui(self.surf, self.parent.position[0] + self.position[0], self.parent.position[1] + self.position[1])
 
 # define your gui actions right down here fam
 
@@ -168,7 +207,13 @@ def print_meme(self):
 def mainmenu_start(self):
 	pass
 
+def showpic(self):
+	for elem in self.parent.elements:
+		if isinstance(elem, gui_image):
+			elem.visible = True
+
 gui_action = {
 	"print_meme" : print_meme,
 	"mainmenu_start" : mainmenu_start,
+	"showpic" : showpic,
 }
