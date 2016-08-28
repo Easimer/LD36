@@ -37,10 +37,14 @@ class gamemgr:
 		self.gui_mainmenu = gui.gui_root("assets/res/mainmenu.res")
 		self.gui_assembler = gui.gui_root("assets/res/assembler.res")
 		self.gui_active = self.gui_mainmenu
+
+		assembler.assembler_init()
 		
 		self.gui_label_gold = self.gui_assembler.findelementbyid("label_gold")
 		self.gui_label_parts = self.gui_assembler.findelementbyid("label_parts")
 		self.gui_label_wave = self.gui_assembler.findelementbyid("label_wave")
+
+		self.set_gold(100)
 
 
 	def update(self):
@@ -50,7 +54,6 @@ class gamemgr:
 		self.lastcheck += 1
 		if self.lastcheck == 8:
 			e.eventdemux.checkhandlers() # check if a handler should be removed
-			self.add_gold(1)
 			self.lastcheck = 0
 		e.eventdemux.update()
 		if self.state == gamemgr.STATE_GAME:
@@ -76,9 +79,10 @@ class gamemgr:
 			e.softreset()
 			self.gui_active = self.gui_assembler
 
-			player = assembler.create_machine("lmao")
-			e.entities.add(player)
-			e.renderer.camera = player
+			self.player = assembler.create_machine_root()
+			e.entities.add(self.player)
+			e.renderer.camera = self.player
+			e.entities.add(assembler.create_enemy((600, 50), "textures/enemy/test.png"))
 		elif self.state ==	gamemgr.STATE_GAME and newstate ==		gamemgr.STATE_PAUSED:
 			self.pausescreen = e.renderer.surface.copy()
 			self.gui_active = self.gui_pausemenu
@@ -112,12 +116,9 @@ class gamemgr:
 		self.gui_label_wave.gensurf()
 
 	def buypart(self, partname):
-		if partname == "2body":
+		p = assembler.add_part_nextcpoint(partname, self.player)
+		try:
+			self.add_gold(-p.cost)
+		except AttributeError:
 			pass
-		elif partname == "4body":
-			pass
-		elif partname == "cannon":
-			pass
-		else:
-			pass
-		print("player tried to buy %s" % partname)
+		

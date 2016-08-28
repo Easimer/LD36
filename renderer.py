@@ -1,14 +1,12 @@
 import pygame
 from atypes import vector
-from atypes import transform
+from atypes import transform, sprite2d
 
 class renderer:
 	surface = None
 	camera = None # an entity with a Transform component
 	width = 0
 	height = 0
-
-	lasttime = 0
 
 	def __init__(self, width = 1280, height = 720):
 		
@@ -18,17 +16,12 @@ class renderer:
 		self.width = width
 		self.height = height
 		self.clock = pygame.time.Clock()
+		self.lasttime = 0
+		self.dt = 0
 		print("pygame renderer initialized")
 
 	def postdraw(self):
 		pygame.display.flip()
-
-	@property
-	def dt(self):
-		t = pygame.time.get_ticks()
-		dt = t - self.lasttime
-		self.lasttime = t
-		return dt
 
 	def quit(self):
 		pygame.quit()
@@ -38,6 +31,10 @@ class renderer:
 
 	def postdraw(self):
 		pygame.display.flip()
+		t = pygame.time.get_ticks() / 1000
+		self.dt = t - self.lasttime
+		self.lasttime = t
+
 
 	def settitle(self, title):
 		pygame.display.set_caption(title)
@@ -50,10 +47,16 @@ class renderer:
 			for comp in self.camera.components:
 				if isinstance(comp, transform):
 					newcoord = comp.position - vector(x, y)
-					tx = self.width / 2 + newcoord.x
-					ty = self.height / 2 + newcoord.y
+					tx = self.width / 2 - newcoord.x
+					ty = self.height / 2 - newcoord.y
 					break
-		self.surface.blit(surface, (tx, ty))
+				#if isinstance(comp, sprite2d):
+				#	print("camsprite")
+				#	# if camera target has a sprite, center on it
+				#	tx += comp.sprite.get_width() / 2
+				#	ty += comp.sprite.get_height() / 2
+		pos = (tx - surface.get_width() / 2, ty - surface.get_height() / 2)
+		self.surface.blit(surface, pos)
 
 	def drawsurfgui(self, surface, x, y):
 		# don't translate coordinates
@@ -88,4 +91,5 @@ class renderer:
 		self.surface.blit(s, (0,0))
 
 	def setcamera(self, newcamera):
+		newcamera.setascam()
 		self.camera = newcamera

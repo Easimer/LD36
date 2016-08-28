@@ -65,3 +65,16 @@ class entities:
 
 	def removebyobj(self, obj):
 		self.entities_rw.remove(ent)
+
+	def dump(self):
+		self.ro_lock = True
+		for ent in self.entities_ro:
+			print(ent)
+			for k,v in ent.__dict__.items():
+				print("\t%s : %s" % (k,v))
+				if type(v) == list:
+					for e in v:
+						for k2, v2 in e.__dict__.items():
+							print("\t\t%s : %s" % (k2,v2))
+						print()
+			print()
