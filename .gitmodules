@@ -1,3 +1,0 @@
-[submodule "data"]
-	path = assets
-	url = ssh://root@172.16.0.3/srv/git/awoo-data/
